@@ -19,7 +19,7 @@ To ensure a smooth session, please ensure the following items are verified befor
 - **Visual Studio Code**: Recommended to use latest stable VS Code.
 - **Required Extensions**: Install the [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) and [GitHub Pull Requests & Issues](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-pull-request-github) extensions in VS Code.
 -  **`uv` Package Manager**: The `uv` utility is required for fast environment and dependency management: [uv Installation Guide](https://docs.astral.sh/uv/getting-started/installation/)
-- **Code Base**: Fork the [course repository](https://github.com/YvFrey/training-github-copilot/tree/main) to your own GitHub account. Clone **your project** locally. This setup ensures you have all necessary permissions in Github when running your custom agents.
+- **Code Base**: Fork the [course repository](https://github.com/YvFrey/github-copilot-training.git) to your own GitHub account. Clone **your project** locally. This setup ensures you have all necessary permissions in Github when running your custom agents.
 
 ### ⚠️ Important: Feature Alignment and Version Check
 
