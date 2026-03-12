@@ -53,8 +53,9 @@ This is especially valuable in Copilot because it lets you:
 | **6.3** | **Use the Coordinator** | In Copilot Chat, keep the mode picker on **Agent** and select **Feature Builder** from the custom agent picker. |
 | **6.4** | **Run a Structured Task** | **Chat:** `Build a new endpoint to change task status. Use Repo Researcher as a subagent to locate the FastAPI structure and current status handling. Then use Implementer as a subagent to add the endpoint. Then use Reviewer as a subagent to review correctness, typing, and tests. Finish with a concise summary, risks, and follow-up.` |
 | **6.5** | **Inspect the Execution** | Expand the collapsed tool calls and identify which subagent ran for each step. Note what each one contributed back to the coordinator. |
-| **6.6** | **Make One Meaningful Extension** | Extend the completed workflow with one forward-only improvement. Example ideas: add stronger validation, improve the test, refine the response model, or improve the review criteria. |
-| **6.7** | **Explore Freely** | Now go beyond the guided task. Change one worker agent, change one model, add a new specialized subagent, or try a new feature request of your own. The goal is to observe how orchestration changes result quality, visibility, and workflow feel. |
+| **6.6** | **Review the Reusable Prompt** | Open `feature-builder.prompt.md` and review how it standardizes the same subagent workflow into a reusable slash command. |
+| **6.7** | **Make One Meaningful Extension** | Extend the completed workflow with one improvement. Example ideas: add stronger validation, improve the test, refine the response model, or improve the review criteria. |
+| **6.8** | **Explore Freely** | Now go beyond the guided task. Change one worker agent, change one model, add a new specialized subagent, or try a new feature request of your own. The goal is to observe how orchestration changes result quality, visibility, and workflow feel. |
 
 ---
 
