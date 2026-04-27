@@ -5,7 +5,25 @@ import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from app.main import app
+from app.main import app, MOCK_TASKS
+
+
+INITIAL_TASKS = {
+    task_id: task.model_copy(deep=True)
+    for task_id, task in MOCK_TASKS.items()
+}
+
+
+@pytest.fixture(autouse=True)
+def reset_mock_tasks() -> None:
+    """Reset in-memory task store for deterministic tests."""
+    MOCK_TASKS.clear()
+    MOCK_TASKS.update(
+        {
+            task_id: task.model_copy(deep=True)
+            for task_id, task in INITIAL_TASKS.items()
+        }
+    )
 
 
 @pytest_asyncio.fixture

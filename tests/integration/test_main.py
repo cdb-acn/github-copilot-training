@@ -137,9 +137,13 @@ async def test_get_task_status_returns_status_for_existing_task(client: AsyncCli
     create_response = await client.post("/log_task", json=task_data)
     assert create_response.status_code == 200
 
-    response = await client.get(f"/task/{task_data['task_id']}/status")
+    tasks_response = await client.get("/tasks")
+    assert tasks_response.status_code == 200
+    created_task = next(task for task in tasks_response.json() if task["title"] == task_data["title"])
+
+    response = await client.get(f"/task/{created_task['task_id']}/status")
     assert response.status_code == 200
-    assert response.json() == task_data["status"]
+    assert response.json() == {"status": task_data["status"]}
 
 
 @pytest.mark.asyncio
@@ -149,3 +153,58 @@ async def test_get_task_status_returns_404_for_missing_task(client: AsyncClient)
     response = await client.get("/task/999999/status")
     assert response.status_code == 404
     assert response.json()["detail"] == "Task not found"
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_log_task_rejects_invalid_status(client: AsyncClient) -> None:
+    """Test POST /log_task returns 422 for invalid enum value."""
+    response = await client.post(
+        "/log_task",
+        json={
+            "task_id": 10,
+            "title": "Invalid status task",
+            "status": "done",
+            "hours_spent": 1.0,
+        },
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_log_task_rejects_missing_required_fields(client: AsyncClient) -> None:
+    """Test POST /log_task returns 422 when title is missing."""
+    response = await client.post(
+        "/log_task",
+        json={
+            "task_id": 11,
+            "status": "pending",
+            "hours_spent": 1.0,
+        },
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_log_task_rejects_invalid_hours_type(client: AsyncClient) -> None:
+    """Test POST /log_task returns 422 when hours_spent has invalid type."""
+    response = await client.post(
+        "/log_task",
+        json={
+            "task_id": 12,
+            "title": "Invalid hours",
+            "status": "pending",
+            "hours_spent": "two hours",
+        },
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_get_task_status_rejects_non_integer_task_id(client: AsyncClient) -> None:
+    """Test GET /task/{task_id}/status returns 422 for non-integer task_id."""
+    response = await client.get("/task/not-a-number/status")
+    assert response.status_code == 422
