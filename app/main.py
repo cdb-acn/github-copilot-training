@@ -1,29 +1,8 @@
-from typing import Dict
+from typing import Dict, List
 import asyncio
-from enum import Enum
-from typing import List
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
 
-class TaskStatus(str, Enum):
-    """Available statuses for any task."""
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETE = "complete"
-
-class DeveloperTask(BaseModel):
-    """Model for a single task logged by a developer."""
-    task_id: int
-    title: str
-    status: TaskStatus = TaskStatus.PENDING
-    hours_spent: float = 0.0
-
-class ProductivityReport(BaseModel):
-    """The final calculated report."""
-    total_tasks: int
-    completed_tasks: int
-    total_hours_spent: float
-    completion_rate: float
+from app.models import TaskStatus, DeveloperTask, ProductivityReport, TaskCompletionMetrics
 
 
 # --- Mock Database / In-Memory Service Logic
@@ -40,11 +19,11 @@ async def fetch_all_tasks() -> List[DeveloperTask]:
     return list(MOCK_TASKS.values())
 
 async def generate_productivity_report() -> ProductivityReport:
-    """Calculates key metrics based on all tasks."""
+    """Builds a productivity summary from all currently stored tasks."""
     tasks = await fetch_all_tasks()
     
     total_tasks = len(tasks)
-    completed_tasks = sum(1 for task in tasks if task.status == TaskStatus.PENDING)
+    completed_tasks = sum(1 for task in tasks if task.status == TaskStatus.COMPLETE)
     
     total_hours_spent = sum(task.hours_spent for task in tasks)
     completion_rate = round(completed_tasks / total_tasks, 2) if total_tasks > 0 else 0.0
@@ -61,26 +40,48 @@ async def generate_productivity_report() -> ProductivityReport:
 app = FastAPI(title="Productivity Reporting System")
 
 @app.get("/status")
-def get_status():
+async def get_status() -> Dict[str, str]:
+    """Health-check endpoint used to confirm the API is running."""
     return {"status": "ok"}
 
 
 @app.get("/tasks", response_model=List[DeveloperTask])
-async def get_all_tasks():
+async def get_all_tasks() -> List[DeveloperTask]:
     """Returns a list of all logged tasks."""
     return await fetch_all_tasks()
 
 
 @app.get("/report", response_model=ProductivityReport)
-async def get_productivity_report():
+async def get_productivity_report() -> ProductivityReport:
     """Returns the calculated productivity report."""
     return await generate_productivity_report()
 
 
 @app.post("/log_task")
-async def log_task(task: DeveloperTask):
+async def log_task(task: DeveloperTask) -> TaskCompletionMetrics:
+    """Stores a task and returns aggregate task-completion metrics."""
     new_id = max(MOCK_TASKS.keys()) + 1 if MOCK_TASKS else 1
     task.task_id = new_id
     MOCK_TASKS[new_id] = task
     
-    return f"Task ID {task.task_id} logged successfully."
+    # Calculate task completion metrics
+    tasks = list(MOCK_TASKS.values())
+    total_tasks = len(tasks)
+    completed_tasks = sum(1 for t in tasks if t.status == TaskStatus.COMPLETE)
+    pending_tasks = sum(1 for t in tasks if t.status == TaskStatus.PENDING)
+    in_progress_tasks = sum(1 for t in tasks if t.status == TaskStatus.IN_PROGRESS)
+    
+    return TaskCompletionMetrics(
+        total_tasks=total_tasks,
+        completed_tasks=completed_tasks,
+        pending_tasks=pending_tasks,
+        in_progress_tasks=in_progress_tasks
+    )
+
+@app.get("/task/{task_id}/status", response_model=Dict[str, TaskStatus])
+async def get_task_status(task_id: int) -> Dict[str, TaskStatus]:
+    """Returns the status for a task id, or 404 when the task does not exist."""
+    task = MOCK_TASKS.get(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"status": task.status}

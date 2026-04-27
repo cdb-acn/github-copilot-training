@@ -1,0 +1,34 @@
+"""Pydantic models for the Productivity Reporting System."""
+
+from enum import Enum
+from pydantic import BaseModel
+
+
+class TaskStatus(str, Enum):
+    """Available statuses for any task."""
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    COMPLETE = "complete"
+
+
+class DeveloperTask(BaseModel):
+    """Model for a single task logged by a developer."""
+    task_id: int
+    title: str
+    status: TaskStatus = TaskStatus.PENDING
+    hours_spent: float = 0.0
+
+
+class ProductivityReport(BaseModel):
+    """The final calculated report."""
+    total_tasks: int
+    completed_tasks: int
+    total_hours_spent: float
+    completion_rate: float
+
+class TaskCompletionMetrics(BaseModel):
+    """Metrics related to task completion."""
+    total_tasks: int
+    completed_tasks: int
+    pending_tasks: int
+    in_progress_tasks: int
