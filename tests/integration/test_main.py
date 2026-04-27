@@ -127,10 +127,19 @@ async def test_log_task_with_complete_status(client: AsyncClient) -> None:
 @pytest.mark.asyncio
 @pytest.mark.integration
 async def test_get_task_status_returns_status_for_existing_task(client: AsyncClient) -> None:
-    """Test that GET /task/{task_id}/status returns the task status for existing tasks."""
-    response = await client.get("/task/1/status")
+    """Test that GET /task/{task_id}/status returns the task status for an existing task."""
+    task_data = {
+        "task_id": 996,
+        "title": "Status Endpoint Test Task",
+        "status": "complete",
+        "hours_spent": 3.0,
+    }
+    create_response = await client.post("/log_task", json=task_data)
+    assert create_response.status_code == 200
+
+    response = await client.get(f"/task/{task_data['task_id']}/status")
     assert response.status_code == 200
-    assert response.json() == "complete"
+    assert response.json() == task_data["status"]
 
 
 @pytest.mark.asyncio

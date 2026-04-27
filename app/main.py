@@ -78,10 +78,10 @@ async def log_task(task: DeveloperTask) -> TaskCompletionMetrics:
         in_progress_tasks=in_progress_tasks
     )
 
-@app.get("/task/{task_id}/status", response_model=TaskStatus)
-async def get_task_status(task_id: int) -> TaskStatus:
+@app.get("/task/{task_id}/status", response_model=Dict[str, TaskStatus])
+async def get_task_status(task_id: int) -> Dict[str, TaskStatus]:
     """Returns the status for a task id, or 404 when the task does not exist."""
     task = MOCK_TASKS.get(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    return task.status  
+    return {"status": task.status}
